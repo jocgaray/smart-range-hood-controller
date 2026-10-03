@@ -41,6 +41,7 @@ htmlcov/
 # Generated plots and test artifacts
 tests/*.png
 *.png
+!docs/**/*.png
 predictions/
 
 # ==========================================
