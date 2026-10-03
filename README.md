@@ -204,7 +204,14 @@ uv run ruff format --check .
 
 ## Screenshots of Production UI & Sample Scenario Results
 
+The plots illustrate a performance comparison between proactive and reactive controllers, along with the predicted ML cooking onset probabilities.
+
+**Overlapping Compound Cooking: Boiling and Heaving Frying**:  The simulation was generated using the preset scenario selector in the user interface. The superior performance of the proactive controller is clearly demonstrated, reducing peak pollutant exposure while simultaneously lowering energy usage.
+
 ![Dashboard UI 2](docs/images/preset_scenario_result.png)
+
+**Stir-fry simulation instance (scenario generated using natural language)**: Here, a natural language cooking prompt was parsed into a structured simulation scenario via LLM output constraints. The superior performance of the proactive controller is clearly demonstrated, reducing peak pollutant exposure while simultaneously lowering energy usage and eliminating fan chatter.
+
 ![Dashboard UI 1](docs/images/llm_scenario_result.png)
 
 
