@@ -114,9 +114,7 @@ class SimulationEngine:
         normalized_mode = mode.strip().lower()
 
         if normalized_mode not in {"proactive", "reactive"}:
-            raise ValueError(
-                "mode must be 'proactive' or 'reactive'"
-            )
+            raise ValueError("mode must be 'proactive' or 'reactive'")
 
         telemetry_df = SimulationEngine._build_showcase_telemetry(
             duration_min=duration_min

@@ -4,7 +4,6 @@ Selected function signatures and docstrings from the production smart hood contr
 Implementation details are intentionally omitted for IP protection.
 """
 
-from typing import Any
 import pandas as pd
 
 
@@ -28,7 +27,9 @@ def filter_short_label_noise(
         # Standard debouncing: remove positive runs shorter than min_duration_steps
         blocks = (df[label_col] != df[label_col].shift()).cumsum()
         counts = df.groupby(blocks)[label_col].transform("count")
-        df[label_col] = df[label_col].where((df[label_col] == 0) | (counts >= min_duration_steps), 0)
+        df[label_col] = df[label_col].where(
+            (df[label_col] == 0) | (counts >= min_duration_steps), 0
+        )
     return df
 
 
@@ -63,4 +64,3 @@ def create_event_target(
             df[label_col] = (df[label_col] | sensor_trigger).astype(int)
 
     return df
-

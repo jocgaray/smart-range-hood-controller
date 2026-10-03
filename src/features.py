@@ -1,6 +1,6 @@
 """Telemetry Feature Engineering Module — Sanitized Public Showcase.
 
-This module provides time-series feature extraction pipelines for air quality 
+This module provides time-series feature extraction pipelines for air quality
 and environmental sensor telemetry.
 
 Note:
@@ -10,6 +10,7 @@ Note:
 """
 
 import logging
+
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -31,9 +32,14 @@ def _extract_rate_of_change(
 
 
 def _extract_rolling_statistics(
-    df: pd.DataFrame, sensor_cols: list[str], windows: list[int] = [3, 5, 15]
+    df: pd.DataFrame,
+    sensor_cols: list[str],
+    windows: list[int] | None = None,
 ) -> tuple[pd.DataFrame, list[str]]:
     """Compute multi-scale rolling means and standard deviations."""
+    if windows is None:
+        windows = [3, 5, 15]
+
     feature_cols = []
     for window in windows:
         for col in sensor_cols:
@@ -49,9 +55,14 @@ def _extract_rolling_statistics(
 
 
 def _extract_lag_features(
-    df: pd.DataFrame, sensor_cols: list[str], lags: list[int] = [1, 3]
+    df: pd.DataFrame,
+    sensor_cols: list[str],
+    lags: list[int] | None = None,
 ) -> tuple[pd.DataFrame, list[str]]:
     """Extract historical sensor value lags for temporal context."""
+    if lags is None:
+        lags = [1, 3]
+
     feature_cols = []
     for lag in lags:
         for col in sensor_cols:
@@ -119,5 +130,7 @@ def engineer_features(
         df, lag_cols = _extract_lag_features(df, sensor_cols)
         all_engineered_cols = list(dict.fromkeys(diff_cols + roll_cols + lag_cols))
 
-    logger.info("Successfully engineered %d telemetry features.", len(all_engineered_cols))
+    logger.info(
+        "Successfully engineered %d telemetry features.", len(all_engineered_cols)
+    )
     return df, all_engineered_cols

@@ -1,11 +1,12 @@
 """
-tests/test_simulation_api.py
+tests/integration/test_simulation_api.py
 
 Integration tests verifying FastAPI orchestration (api/main.py)
 and synthetic backend engine (src/simulation_engine.py) work end-to-end.
 """
 
 from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -135,9 +136,7 @@ def test_simulate_llm_fallback_without_api_key(client):
 
         data = response.json()
         assert data["status"] == "success"
-        assert (
-            data["parsed_params"]["scenario_title"] == "Synthetic Moderate Load"
-        )
+        assert data["parsed_params"]["scenario_title"] == "Synthetic Moderate Load"
 
 
 @patch("api.main.ChatGoogleGenerativeAI")

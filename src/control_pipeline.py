@@ -19,12 +19,12 @@ heuristics, and controller tuning are intentionally encapsulated.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 # =====================================================================
 # 1. PIPELINE CONFIGURATION
 # =====================================================================
+
 
 @dataclass(frozen=True)
 class PipelineConfig:
@@ -35,7 +35,7 @@ class PipelineConfig:
     externally rather than hardcoded into the orchestration layer.
     """
 
-    field_map: Dict[str, str] = field(
+    field_map: dict[str, str] = field(
         default_factory=lambda: {
             "pm25": "pm25_raw",
             "co2": "co2_raw",
@@ -49,6 +49,7 @@ class PipelineConfig:
 # =====================================================================
 # 2. DATA CONTRACTS
 # =====================================================================
+
 
 @dataclass(frozen=True)
 class TelemetryPayload:
@@ -89,9 +90,7 @@ class PhysicalStateEstimate:
     velocity: float
     acceleration: float
     is_rising: bool
-    state_metadata: Dict[str, float] = field(
-        default_factory=dict
-    )
+    state_metadata: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -101,14 +100,13 @@ class ControlCommand:
     target_level: str
     control_mode: str
     is_system_active: bool
-    timers: Dict[str, float] = field(
-        default_factory=dict
-    )
+    timers: dict[str, float] = field(default_factory=dict)
 
 
 # =====================================================================
 # 3. STAGE 1 — ML INFERENCE
 # =====================================================================
+
 
 class EventClassifier:
     """
@@ -120,14 +118,14 @@ class EventClassifier:
 
     def __init__(
         self,
-        model_path: Optional[str] = None,
+        model_path: str | None = None,
     ):
         self._model_path = model_path
 
     def predict(
         self,
         telemetry: TelemetryPayload,
-        history: List[TelemetryPayload],
+        history: list[TelemetryPayload],
     ) -> MLInferenceOutput:
         """
         Predict event probability from the current telemetry
@@ -146,6 +144,7 @@ class EventClassifier:
 # 4. STAGE 2 — STATE ESTIMATION
 # =====================================================================
 
+
 class PhysicalStateEstimator:
     """
     Estimates the evolving physical/environmental state from
@@ -161,7 +160,7 @@ class PhysicalStateEstimator:
     ):
         self.config = config
 
-        self._previous_metric: Optional[float] = None
+        self._previous_metric: float | None = None
         self._velocity: float = 0.0
         self._acceleration: float = 0.0
 
@@ -193,6 +192,7 @@ class PhysicalStateEstimator:
 # 5. STAGE 3 — CLOSED-LOOP CONTROL
 # =====================================================================
 
+
 class ClosedLoopController:
     """
     Deterministic controller operating on estimated state and
@@ -212,7 +212,7 @@ class ClosedLoopController:
         self.current_level = "OFF"
         self.is_system_active = False
 
-        self.timers: Dict[str, float] = {
+        self.timers: dict[str, float] = {
             "clearance": 0.0,
             "hold": 0.0,
             "cooldown": 0.0,
@@ -243,6 +243,7 @@ class ClosedLoopController:
 # 6. PIPELINE ORCHESTRATOR
 # =====================================================================
 
+
 class ControlPipelineOrchestrator:
     """
     Top-level orchestration of the real-time control pipeline.
@@ -262,27 +263,21 @@ class ControlPipelineOrchestrator:
 
     def __init__(
         self,
-        config: Optional[PipelineConfig] = None,
+        config: PipelineConfig | None = None,
     ):
         self.config = config or PipelineConfig()
 
         self.ml_classifier = EventClassifier()
-        self.state_estimator = PhysicalStateEstimator(
-            self.config
-        )
-        self.controller = ClosedLoopController(
-            self.config
-        )
+        self.state_estimator = PhysicalStateEstimator(self.config)
+        self.controller = ClosedLoopController(self.config)
 
-        self.history_buffer: List[
-            TelemetryPayload
-        ] = []
+        self.history_buffer: list[TelemetryPayload] = []
 
     def process_telemetry_frame(
         self,
-        raw_telemetry: Dict[str, Any],
+        raw_telemetry: dict[str, Any],
         dt: float = 1.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute one complete ML → estimation → control cycle.
         """
@@ -294,9 +289,7 @@ class ControlPipelineOrchestrator:
         fmap = self.config.field_map
 
         frame = TelemetryPayload(
-            timestamp=float(
-                raw_telemetry.get("timestamp", 0.0)
-            ),
+            timestamp=float(raw_telemetry.get("timestamp", 0.0)),
             primary_particulate=float(
                 raw_telemetry.get(
                     fmap["pm25"],
@@ -375,11 +368,7 @@ class ControlPipelineOrchestrator:
                     state_estimate.primary_metric,
                     3,
                 ),
-                "trend": (
-                    "RISING"
-                    if state_estimate.is_rising
-                    else "STABLE"
-                ),
+                "trend": ("RISING" if state_estimate.is_rising else "STABLE"),
             },
             "control": {
                 "target_level": command.target_level,
