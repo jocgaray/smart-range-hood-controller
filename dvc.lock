@@ -1,0 +1,24 @@
+schema: '2.0'
+stages:
+  build_features:
+    cmd: python pipelines/build_features.py --input 
+      data/sample/telemetry_sample.parquet --output 
+      data/features_prepared.parquet
+    deps:
+    - path: data/sample/telemetry_sample.parquet
+      hash: md5
+      md5: 0d23f6aedc2376cfd2a1b0b52d037425
+      size: 10170
+    - path: pipelines/build_features.py
+      hash: md5
+      md5: 17ed2921a2fe0c25a3a3478e304e4f60
+      size: 5336
+    - path: src/features.py
+      hash: md5
+      md5: 3210440f7ae0756b2df323787c3aefc6
+      size: 4680
+    outs:
+    - path: data/features_prepared.parquet
+      hash: md5
+      md5: c6d84d9fef51a2a35c1a1c29749813d5
+      size: 79168
