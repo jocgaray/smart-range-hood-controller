@@ -20,33 +20,33 @@ This repository serves as a showcase for production-ready MLOps practices, clean
 ## System Overview
 
 ```text
-               +-------------------------+
-               |  Telemetry Sensor Data  |
-               +------------+------------+
-                            |
-                            v
-+-------------------------------------------------------+
-|                    DVC Pipeline                       |
-|  [build_features] ---> [train_optuna] ---> MLflow     |
-+---------------------------+---------------------------+
-                            |
-                            v
-                  +-------------------+
-                  | Trained Artifacts |
-                  +---------+---------+
-                            |
-                            v
-                  +-------------------+
-                  |   FastAPI App     |
-                  |  (REST API / API) |
-                  +---------+---------+
-                            ^
-                            |  (REST / HTTP)
-                            v
-                  +-------------------+
-                  |  Streamlit App    |
-                  | (Web Dashboard)   |
-                  +-------------------+
+                        +-------------------------+
+                        |  Telemetry Sensor Data  |
+                        +------------+------------+
+                                        |
+                                        v
+            +-------------------------------------------------------+
+            |                    DVC Pipeline                       |
+            |  [build_features] ---> [train_optuna] ---> MLflow     |
+            +---------------------------+---------------------------+
+                                        |
+                                        v
+                            +-------------------+
+                            | Trained Artifacts |
+                            +---------+---------+
+                                      |
+                                      v
+            +-------------------+           +-----------------------+
+            |    FastAPI App    | <-------> |   Simulation Engine   |
+            | (REST API Router) |           |  (Physics MPC & IAQ)  |
+            +---------+---------+           +-----------------------+
+                        ^
+                        |  (REST / HTTP)
+                        v
+            +-------------------+
+            |   Streamlit App   |
+            |  (Web Dashboard)  |
+            +-------------------+
 
 ```
 ---
@@ -65,7 +65,7 @@ This repository serves as a showcase for production-ready MLOps practices, clean
 Clone the repository and sync dependencies:
 
 ```bash
-git clone [https://github.com/jocgaray/smart-range-hood-controller.git](https://github.com/jocgaray/smart-range-hood-controller.git)
+git clone https://github.com/jocgaray/smart-range-hood-controller.git
 cd smart-range-hood-controller
 
 # Install dependencies into virtual environment
@@ -204,8 +204,9 @@ uv run ruff format --check .
 
 ## Screenshots of Production UI & Sample Scenario Results
 
-![Dashboard UI 1](docs/images/llm_scenario_result.png)
 ![Dashboard UI 2](docs/images/preset_scenario_result.png)
+![Dashboard UI 1](docs/images/llm_scenario_result.png)
+
 
 ---
 
