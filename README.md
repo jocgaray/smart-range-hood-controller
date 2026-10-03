@@ -1,7 +1,7 @@
 # Smart Range Hood Controller: ML Onset Detection & Physics-Based MPC Optimization
 
 > **Project Scope & Intellectual Property Notice**
-> This repository contains selected, IP-safe excerpts from a production-oriented smart range hood control project. Proprietary physics models, controller tuning, feature engineering, trained artifacts, raw telemetry, and detailed LLM prompts have been omitted or stubbed to demonstrate architecture, interfaces, and software engineering practices.
+> This repository contains selected, IP-safe excerpts from a production-oriented project. Proprietary physics models, controller tuning, feature engineering, trained artifacts, raw telemetry, and detailed LLM prompts have been omitted or stubbed. The public showcase demonstrates the **system architecture, interfaces, and software engineering practices.**
 
 ---
 
