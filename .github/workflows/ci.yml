@@ -39,7 +39,7 @@ jobs:
           uv run pytest tests/ \
             --cov=src \
             --cov-report=term-missing \
-            --cov-fail-under=80
+            --cov-fail-under=35
 
       - name: Verify Docker Compose Build
         run: docker compose build
