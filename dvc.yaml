@@ -1,0 +1,17 @@
+stages:
+  build_features:
+    cmd: python pipelines/build_features.py --input data/sample/telemetry_sample.parquet --output data/features_prepared.parquet
+    deps:
+      - data/sample/telemetry_sample.parquet
+      - pipelines/build_features.py
+      - src/features.py
+    outs:
+      - data/features_prepared.parquet
+
+  train_optuna:
+    cmd: python pipelines/train_optuna.py --data data/features_prepared.parquet --output models/event_detector.joblib --trials 30
+    deps:
+      - data/features_prepared.parquet
+      - pipelines/train_optuna.py
+    outs:
+      - models/event_detector.joblib
