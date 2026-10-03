@@ -114,9 +114,7 @@ def build_and_save_features(
                 "Timestamp",
                 "date",
             ]
-            found_col = [
-                col for col in possible_time_cols if col in df.columns
-            ]
+            found_col = [col for col in possible_time_cols if col in df.columns]
 
             if found_col:
                 df.rename(

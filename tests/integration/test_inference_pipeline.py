@@ -26,7 +26,9 @@ def test_predict_stream_window_end_to_end_contract(mock_engine):
         [[0.1, 0.1], [0.1, 0.2], [0.1, 0.3], [0.1, 0.4], [0.1, 0.5], [0.1, 0.85]]
     )
 
-    with patch("src.inference.engineer_features", return_value=(df_engineered_mock, None)):
+    with patch(
+        "src.inference.engineer_features", return_value=(df_engineered_mock, None)
+    ):
         result = mock_engine.predict_stream_window(buffer_df, min_buffer_rows=5)
 
     # Verify return dictionary contract

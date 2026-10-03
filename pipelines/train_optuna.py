@@ -54,8 +54,7 @@ def get_git_commit() -> str:
 
         if status:
             raise RuntimeError(
-                "Uncommitted changes detected. "
-                "Commit or stash changes before training."
+                "Uncommitted changes detected. Commit or stash changes before training."
             )
 
         return (
@@ -76,9 +75,7 @@ def get_dvc_data_version(data_path: str) -> str:
     try:
         path_obj = Path(data_path)
         rel_path = (
-            path_obj.relative_to(PROJECT_ROOT)
-            if path_obj.is_absolute()
-            else path_obj
+            path_obj.relative_to(PROJECT_ROOT) if path_obj.is_absolute() else path_obj
         )
         return dvc.api.get_url(
             path=str(rel_path),
@@ -271,9 +268,7 @@ def train_and_optimize(
                         val_probs,
                     )
 
-                    f1_scores = (
-                        2 * precision * recall / (precision + recall + 1e-10)
-                    )
+                    f1_scores = 2 * precision * recall / (precision + recall + 1e-10)
 
                     fold_scores.append(float(np.max(f1_scores)))
 
@@ -434,9 +429,7 @@ def train_and_optimize(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Example ML training pipeline."
-    )
+    parser = argparse.ArgumentParser(description="Example ML training pipeline.")
 
     parser.add_argument(
         "--data",

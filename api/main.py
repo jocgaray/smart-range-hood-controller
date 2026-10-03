@@ -182,8 +182,7 @@ PRESET_SCENARIOS: dict[str, dict[str, Any]] = {
     "moderate_load": {
         "title": "Moderate Load Scenario",
         "description": (
-            "Synthetic moderate-intensity activity for "
-            "baseline controller evaluation."
+            "Synthetic moderate-intensity activity for baseline controller evaluation."
         ),
         "params": {
             "scenario_title": "Synthetic Moderate Load",
@@ -201,8 +200,7 @@ PRESET_SCENARIOS: dict[str, dict[str, Any]] = {
     "low_background": {
         "title": "Low Background Scenario",
         "description": (
-            "Synthetic low-intensity background condition "
-            "for sensitivity testing."
+            "Synthetic low-intensity background condition for sensitivity testing."
         ),
         "params": {
             "scenario_title": "Synthetic Background",
@@ -241,8 +239,7 @@ def reconcile_scenario_parameters(
         return scenario
 
     max_end_time = max(
-        activity["start_time_min"] + activity["duration_min"]
-        for activity in activities
+        activity["start_time_min"] + activity["duration_min"] for activity in activities
     )
 
     scenario["total_duration_min"] = max(
@@ -265,8 +262,7 @@ def parse_and_validate_prompt(prompt: str) -> dict[str, Any]:
 
     if not gemini_key:
         logger.warning(
-            "GEMINI_API_KEY missing. "
-            "Falling back to the public showcase scenario."
+            "GEMINI_API_KEY missing. Falling back to the public showcase scenario."
         )
 
         return PRESET_SCENARIOS["moderate_load"]["params"]
@@ -277,9 +273,7 @@ def parse_and_validate_prompt(prompt: str) -> dict[str, Any]:
         temperature=0,
     )
 
-    structured_llm = llm.with_structured_output(
-        ParsedScenarioParams
-    )
+    structured_llm = llm.with_structured_output(ParsedScenarioParams)
 
     system_prompt = (
         "Convert the user's natural-language scenario into "
@@ -369,17 +363,12 @@ def run_standard_simulation(
         scenario_params = req.params
 
     elif req.scenario_key in PRESET_SCENARIOS:
-        scenario_params = PRESET_SCENARIOS[
-            req.scenario_key
-        ]["params"]
+        scenario_params = PRESET_SCENARIOS[req.scenario_key]["params"]
 
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=(
-                f"Scenario key '{req.scenario_key}' "
-                "not found."
-            ),
+            detail=(f"Scenario key '{req.scenario_key}' not found."),
         )
 
     try:

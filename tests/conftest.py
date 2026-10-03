@@ -15,7 +15,8 @@ def mock_engine():
         "feature_cols": ["feat_1", "feat_2"],
         "optimal_threshold": 0.6,
     }
-    with patch("joblib.load", return_value=fake_payload), patch.object(
-        Path, "exists", return_value=True
+    with (
+        patch("joblib.load", return_value=fake_payload),
+        patch.object(Path, "exists", return_value=True),
     ):
         return ModelInferenceEngine(model_path="dummy_path.joblib")

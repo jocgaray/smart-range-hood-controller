@@ -136,9 +136,7 @@ def test_simulate_llm_fallback_without_api_key(client):
 
         data = response.json()
         assert data["status"] == "success"
-        assert (
-            data["parsed_params"]["scenario_title"] == "Synthetic Moderate Load"
-        )
+        assert data["parsed_params"]["scenario_title"] == "Synthetic Moderate Load"
 
 
 @patch("api.main.ChatGoogleGenerativeAI")

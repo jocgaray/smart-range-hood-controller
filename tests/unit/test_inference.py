@@ -10,6 +10,7 @@ from src.inference import ModelInferenceEngine
 
 # --- 1. Initialization Tests ---
 
+
 def test_init_raises_file_not_found():
     """Verify initialization raises FileNotFoundError if model_path does not exist."""
     with pytest.raises(FileNotFoundError, match="Model artifact not available"):
@@ -23,8 +24,9 @@ def test_init_loads_payload_correctly():
         "feature_cols": ["feat_a", "feat_b"],
         "optimal_threshold": 0.75,
     }
-    with patch("joblib.load", return_value=fake_payload), patch.object(
-        Path, "exists", return_value=True
+    with (
+        patch("joblib.load", return_value=fake_payload),
+        patch.object(Path, "exists", return_value=True),
     ):
         engine = ModelInferenceEngine(model_path="dummy.joblib")
 
@@ -34,6 +36,7 @@ def test_init_loads_payload_correctly():
 
 
 # --- 2. Helper Method Tests ---
+
 
 def test_ensure_timestamp_from_index(mock_engine):
     """Verify DatetimeIndex is converted into a sorted timestamp column."""
@@ -68,7 +71,9 @@ def test_ensure_timestamp_missing_raises(mock_engine):
     """Verify ValueError is raised when no timestamp column or alias is present."""
     df_invalid = pd.DataFrame({"temp": [22.0, 21.5], "val": [1, 2]})
 
-    with pytest.raises(ValueError, match="DataFrame must contain a valid timestamp column"):
+    with pytest.raises(
+        ValueError, match="DataFrame must contain a valid timestamp column"
+    ):
         mock_engine._ensure_timestamp_column(df_invalid)
 
 
@@ -90,11 +95,14 @@ def test_align_features_schema_and_casting(mock_engine):
 
 # --- 3. Post-processing Tests ---
 
+
 def test_postprocess_predictions_default_fallback(mock_engine):
     """Verify postprocessing uses thresholding when no custom postprocessor is set."""
     mock_engine.postprocessor = None
     probs = np.array([0.2, 0.7])
-    timestamps = pd.Series(pd.to_datetime(["2026-01-01 10:00:00", "2026-01-01 10:01:00"]))
+    timestamps = pd.Series(
+        pd.to_datetime(["2026-01-01 10:00:00", "2026-01-01 10:01:00"])
+    )
 
     # 0.7 >= 0.6 threshold -> 1
     pred_high = mock_engine._postprocess_predictions(probs, timestamps)
@@ -111,7 +119,9 @@ def test_postprocess_predictions_custom_callable(mock_engine):
     mock_engine.postprocessor = mock_postprocessor
 
     probs = np.array([0.1, 0.3])
-    timestamps = pd.Series(pd.to_datetime(["2026-01-01 10:00:00", "2026-01-01 10:01:00"]))
+    timestamps = pd.Series(
+        pd.to_datetime(["2026-01-01 10:00:00", "2026-01-01 10:01:00"])
+    )
 
     result = mock_engine._postprocess_predictions(probs, timestamps)
 
@@ -120,6 +130,7 @@ def test_postprocess_predictions_custom_callable(mock_engine):
 
 
 # --- 4. Validation Guardrail Test ---
+
 
 def test_predict_stream_window_insufficient_rows(mock_engine):
     """Verify ValueError is raised if buffer contains fewer than min_buffer_rows."""

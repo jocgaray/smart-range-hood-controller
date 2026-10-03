@@ -26,8 +26,7 @@ class ModelInferenceEngine:
     def __init__(
         self,
         model_path: str = "models/event_detector.joblib",
-        postprocessor: Callable[[np.ndarray, pd.Series, float], int]
-        | None = None,
+        postprocessor: Callable[[np.ndarray, pd.Series, float], int] | None = None,
     ) -> None:
         self.model_path = Path(model_path)
 
@@ -38,9 +37,7 @@ class ModelInferenceEngine:
 
         self.model: Any = payload["model"]
         self.expected_features: list[str] = payload["feature_cols"]
-        self.optimal_threshold: float = float(
-            payload.get("optimal_threshold", 0.5)
-        )
+        self.optimal_threshold: float = float(payload.get("optimal_threshold", 0.5))
 
         # Proprietary temporal/signal post-processing is injected
         # behind a public interface.
@@ -74,9 +71,7 @@ class ModelInferenceEngine:
                 "date",
             ]
 
-            found_col = [
-                col for col in possible_time_cols if col in df_clean.columns
-            ]
+            found_col = [col for col in possible_time_cols if col in df_clean.columns]
 
             if found_col:
                 df_clean.rename(
@@ -84,9 +79,7 @@ class ModelInferenceEngine:
                     inplace=True,
                 )
             else:
-                raise ValueError(
-                    "DataFrame must contain a valid timestamp column."
-                )
+                raise ValueError("DataFrame must contain a valid timestamp column.")
 
         df_clean["timestamp"] = pd.to_datetime(df_clean["timestamp"])
 

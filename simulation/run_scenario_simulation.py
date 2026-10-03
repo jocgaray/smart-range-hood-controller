@@ -107,9 +107,7 @@ def run_and_plot_full_diagnostics(duration_min: float = 60.0) -> None:
         res_pro = SimulationEngine.run_simulation(
             params, duration_min, mode="proactive"
         )
-        res_rea = SimulationEngine.run_simulation(
-            params, duration_min, mode="reactive"
-        )
+        res_rea = SimulationEngine.run_simulation(params, duration_min, mode="reactive")
 
         df_pro, df_rea = res_pro.telemetry, res_rea.telemetry
         t_series = df_pro["time_min"]
@@ -118,10 +116,12 @@ def run_and_plot_full_diagnostics(duration_min: float = 60.0) -> None:
         zero_series = pd.Series(0.0, index=t_series.index)
         ref_series = pd.Series(0.80, index=t_series.index)
 
-        all_metrics.extend([
-            {"Scenario": scenario_name, "Mode": "Proactive", **res_pro.metrics},
-            {"Scenario": scenario_name, "Mode": "Reactive", **res_rea.metrics},
-        ])
+        all_metrics.extend(
+            [
+                {"Scenario": scenario_name, "Mode": "Proactive", **res_pro.metrics},
+                {"Scenario": scenario_name, "Mode": "Reactive", **res_rea.metrics},
+            ]
+        )
 
         # ---------------------------------------------------------------------
         # Panel 1 (Col 0): Primary Air Quality Telemetry
@@ -168,9 +168,7 @@ def run_and_plot_full_diagnostics(duration_min: float = 60.0) -> None:
             alpha=0.7,
             label="VOC Telemetry",
         )
-        ax_gas.set_ylabel(
-            "CO2 / VOC (a.u.)", color="forestgreen", fontweight="bold"
-        )
+        ax_gas.set_ylabel("CO2 / VOC (a.u.)", color="forestgreen", fontweight="bold")
 
         lines_1 = l1 + l2 + l3 + l4
         ax_aq.legend(
@@ -191,12 +189,8 @@ def run_and_plot_full_diagnostics(duration_min: float = 60.0) -> None:
         # Panel 2 (Col 1): Control States & State Estimator
         # ---------------------------------------------------------------------
         ax_ctrl = axes[i, 1]
-        act_pro_num = (
-            df_pro["actuator_state"].map(ACTUATOR_STATE_MAP).fillna(0)
-        )
-        act_rea_num = (
-            df_rea["actuator_state"].map(ACTUATOR_STATE_MAP).fillna(0)
-        )
+        act_pro_num = df_pro["actuator_state"].map(ACTUATOR_STATE_MAP).fillna(0)
+        act_rea_num = df_rea["actuator_state"].map(ACTUATOR_STATE_MAP).fillna(0)
 
         f1 = ax_ctrl.step(
             t_series,
@@ -229,9 +223,7 @@ def run_and_plot_full_diagnostics(duration_min: float = 60.0) -> None:
             alpha=0.85,
             label="State Estimate",
         )
-        ax_est.set_ylabel(
-            "State Magnitude (a.u.)", color="magenta", fontweight="bold"
-        )
+        ax_est.set_ylabel("State Magnitude (a.u.)", color="magenta", fontweight="bold")
 
         lines_2 = f1 + f2 + c1
         ax_ctrl.legend(
@@ -290,9 +282,7 @@ def run_and_plot_full_diagnostics(duration_min: float = 60.0) -> None:
 
     # Format bottom X-axes for 3 columns
     for col in range(3):
-        axes[num_scenarios - 1, col].set_xlabel(
-            "Time (minutes)", fontweight="bold"
-        )
+        axes[num_scenarios - 1, col].set_xlabel("Time (minutes)", fontweight="bold")
 
     plt.tight_layout(rect=(0, 0.02, 1, 0.97))
 

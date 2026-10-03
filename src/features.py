@@ -1,6 +1,6 @@
 """Telemetry Feature Engineering Module — Sanitized Public Showcase.
 
-This module provides time-series feature extraction pipelines for air quality 
+This module provides time-series feature extraction pipelines for air quality
 and environmental sensor telemetry.
 
 Note:
@@ -130,5 +130,7 @@ def engineer_features(
         df, lag_cols = _extract_lag_features(df, sensor_cols)
         all_engineered_cols = list(dict.fromkeys(diff_cols + roll_cols + lag_cols))
 
-    logger.info("Successfully engineered %d telemetry features.", len(all_engineered_cols))
+    logger.info(
+        "Successfully engineered %d telemetry features.", len(all_engineered_cols)
+    )
     return df, all_engineered_cols

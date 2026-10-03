@@ -25,6 +25,7 @@ from typing import Any
 # 1. PIPELINE CONFIGURATION
 # =====================================================================
 
+
 @dataclass(frozen=True)
 class PipelineConfig:
     """
@@ -48,6 +49,7 @@ class PipelineConfig:
 # =====================================================================
 # 2. DATA CONTRACTS
 # =====================================================================
+
 
 @dataclass(frozen=True)
 class TelemetryPayload:
@@ -88,9 +90,7 @@ class PhysicalStateEstimate:
     velocity: float
     acceleration: float
     is_rising: bool
-    state_metadata: dict[str, float] = field(
-        default_factory=dict
-    )
+    state_metadata: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -100,14 +100,13 @@ class ControlCommand:
     target_level: str
     control_mode: str
     is_system_active: bool
-    timers: dict[str, float] = field(
-        default_factory=dict
-    )
+    timers: dict[str, float] = field(default_factory=dict)
 
 
 # =====================================================================
 # 3. STAGE 1 — ML INFERENCE
 # =====================================================================
+
 
 class EventClassifier:
     """
@@ -144,6 +143,7 @@ class EventClassifier:
 # =====================================================================
 # 4. STAGE 2 — STATE ESTIMATION
 # =====================================================================
+
 
 class PhysicalStateEstimator:
     """
@@ -191,6 +191,7 @@ class PhysicalStateEstimator:
 # =====================================================================
 # 5. STAGE 3 — CLOSED-LOOP CONTROL
 # =====================================================================
+
 
 class ClosedLoopController:
     """
@@ -242,6 +243,7 @@ class ClosedLoopController:
 # 6. PIPELINE ORCHESTRATOR
 # =====================================================================
 
+
 class ControlPipelineOrchestrator:
     """
     Top-level orchestration of the real-time control pipeline.
@@ -266,16 +268,10 @@ class ControlPipelineOrchestrator:
         self.config = config or PipelineConfig()
 
         self.ml_classifier = EventClassifier()
-        self.state_estimator = PhysicalStateEstimator(
-            self.config
-        )
-        self.controller = ClosedLoopController(
-            self.config
-        )
+        self.state_estimator = PhysicalStateEstimator(self.config)
+        self.controller = ClosedLoopController(self.config)
 
-        self.history_buffer: list[
-            TelemetryPayload
-        ] = []
+        self.history_buffer: list[TelemetryPayload] = []
 
     def process_telemetry_frame(
         self,
@@ -293,9 +289,7 @@ class ControlPipelineOrchestrator:
         fmap = self.config.field_map
 
         frame = TelemetryPayload(
-            timestamp=float(
-                raw_telemetry.get("timestamp", 0.0)
-            ),
+            timestamp=float(raw_telemetry.get("timestamp", 0.0)),
             primary_particulate=float(
                 raw_telemetry.get(
                     fmap["pm25"],
@@ -374,11 +368,7 @@ class ControlPipelineOrchestrator:
                     state_estimate.primary_metric,
                     3,
                 ),
-                "trend": (
-                    "RISING"
-                    if state_estimate.is_rising
-                    else "STABLE"
-                ),
+                "trend": ("RISING" if state_estimate.is_rising else "STABLE"),
             },
             "control": {
                 "target_level": command.target_level,

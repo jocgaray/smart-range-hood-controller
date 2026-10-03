@@ -27,9 +27,7 @@ try:
     scenarios_resp = requests.get(f"{API_V1_URL}/scenarios", timeout=5)
     if scenarios_resp.status_code == 200:
         scenarios_data = scenarios_resp.json()
-        scenario_options = {
-            s["title"]: s["key"] for s in scenarios_data
-        }
+        scenario_options = {s["title"]: s["key"] for s in scenarios_data}
     else:
         scenario_options = {"High Load Scenario": "high_load"}
 except Exception:  # noqa: BLE001
@@ -72,13 +70,17 @@ with tab_preset:
 
             if response.status_code == 200:
                 data = response.json()
-                st.success(f"Simulation execution completed in {data.get('execution_time_sec')}s")
+                st.success(
+                    f"Simulation execution completed in {data.get('execution_time_sec')}s"
+                )
                 st.json(data.get("metrics", {}))
             else:
                 st.error(f"API Error ({response.status_code}): {response.text}")
 
         except requests.exceptions.RequestException as err:
-            st.error(f"Unable to connect to the simulation API at {API_V1_URL}. Details: {err}")
+            st.error(
+                f"Unable to connect to the simulation API at {API_V1_URL}. Details: {err}"
+            )
 
 with tab_llm:
     st.subheader("Natural Language Simulation")
@@ -103,10 +105,14 @@ with tab_llm:
 
             if response.status_code == 200:
                 data = response.json()
-                st.success(f"LLM Simulation completed in {data.get('execution_time_sec')}s")
+                st.success(
+                    f"LLM Simulation completed in {data.get('execution_time_sec')}s"
+                )
                 st.json(data.get("metrics", {}))
             else:
                 st.error(f"API Error ({response.status_code}): {response.text}")
 
         except requests.exceptions.RequestException as err:
-            st.error(f"Unable to connect to the simulation API at {API_V1_URL}. Details: {err}")
+            st.error(
+                f"Unable to connect to the simulation API at {API_V1_URL}. Details: {err}"
+            )
