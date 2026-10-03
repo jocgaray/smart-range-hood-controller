@@ -1,0 +1,113 @@
+# ==========================================
+# Environments & Dependency Managers
+# ==========================================
+.venv/
+env/
+venv/
+
+# ==========================================
+# Python Caches & Build Artifacts
+# ==========================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==========================================
+# Testing, Plots & Generated Output Artifacts
+# ==========================================
+.pytest_cache/
+.coverage
+htmlcov/
+.nox/
+.tox/
+
+# Generated plots and test artifacts
+tests/*.png
+*.png
+predictions/
+
+# ==========================================
+# MLOps & Tracking Logs
+# ==========================================
+mlruns/
+.mlflow/
+.mlflow_projects/
+.mlflow_central/
+mlflow.db
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ==========================================
+# Jupyter Notebook Checkpoints
+# ==========================================
+.ipynb_checkpoints/
+
+# ==========================================
+# Data Files & DVC
+# ==========================================
+# Ignore large dataset extensions everywhere
+*.parquet
+*.csv
+*.feather
+
+# Unignore data directory structures so Git tracks DVC pointers
+!data/
+data/*
+!data/**/*.dvc
+!data/**/.gitignore
+
+# Explicitly ensure DVC configuration and pointer files are tracked
+!*.dvc
+!.dvc
+!.dvc/
+!.dvcignore
+
+# ==========================================
+# Model Files
+# ==========================================
+# Ignore binary model serializations
+models/*.joblib
+models/*.pkl
+models/*.bin
+models/*.onnx
+
+# Explicitly allow lightweight text model files and metadata
+!models/lgb_model.txt
+!models/metadata.json
+
+# ==========================================
+# IDE & System Files
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.env.local
+.env.*.local
+
+# Explicitly track template files
+!.env.example

@@ -20,14 +20,13 @@ configuration are intentionally omitted for IP protection.
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, cast
 
 from fastapi import FastAPI, HTTPException, status
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 
 from src.simulation_engine import SimulationEngine
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -82,7 +81,7 @@ class ParsedScenarioParams(BaseModel):
         description="Total active timeline in minutes",
     )
 
-    activities: List[ActivityParams] = Field(
+    activities: list[ActivityParams] = Field(
         default_factory=list,
     )
 
@@ -113,11 +112,11 @@ class LLMSimulationRequest(BaseModel):
 class StandardSimulationRequest(BaseModel):
     """API request for a preset or abstract scenario."""
 
-    scenario_key: Optional[str] = Field(
+    scenario_key: str | None = Field(
         default="high_load",
     )
 
-    params: Optional[Dict[str, Any]] = Field(
+    params: dict[str, Any] | None = Field(
         default=None,
     )
 
@@ -144,9 +143,9 @@ class SimulationResponse(BaseModel):
 
     status: str
     execution_time_sec: float
-    parsed_params: Optional[Dict[str, Any]] = None
-    metrics: Dict[str, Any]
-    telemetry: List[Dict[str, Any]]
+    parsed_params: dict[str, Any] | None = None
+    metrics: dict[str, Any]
+    telemetry: list[dict[str, Any]]
     plot_base64: str
 
 
@@ -160,7 +159,7 @@ class SimulationResponse(BaseModel):
 # production physical source terms, calibration values, or
 # proprietary simulation settings.
 
-PRESET_SCENARIOS: Dict[str, Dict[str, Any]] = {
+PRESET_SCENARIOS: dict[str, dict[str, Any]] = {
     "high_load": {
         "title": "High Load Scenario",
         "description": (
@@ -227,8 +226,8 @@ PRESET_SCENARIOS: Dict[str, Dict[str, Any]] = {
 
 
 def reconcile_scenario_parameters(
-    scenario: Dict[str, Any],
-) -> Dict[str, Any]:
+    scenario: dict[str, Any],
+) -> dict[str, Any]:
     """
     Apply deterministic consistency rules to a structured scenario.
 
@@ -254,7 +253,7 @@ def reconcile_scenario_parameters(
     return scenario
 
 
-def parse_and_validate_prompt(prompt: str) -> Dict[str, Any]:
+def parse_and_validate_prompt(prompt: str) -> dict[str, Any]:
     """
     Convert natural-language input into a validated abstract scenario.
 
@@ -290,14 +289,17 @@ def parse_and_validate_prompt(prompt: str) -> Dict[str, Any]:
         "Do not invent physical calibration parameters."
     )
 
-    parsed: ParsedScenarioParams = structured_llm.invoke(
+    parsed = structured_llm.invoke(
         [
             ("system", system_prompt),
             ("user", prompt),
         ]
     )
 
-    extracted = parsed.model_dump()
+    if isinstance(parsed, dict):
+        extracted = parsed
+    else:
+        extracted = parsed.model_dump()
 
     # Deterministic reconciliation is kept public because it
     # demonstrates how structured LLM output is made internally
@@ -326,7 +328,7 @@ app = FastAPI(
     "/health",
     status_code=status.HTTP_200_OK,
 )
-def health_check() -> Dict[str, str]:
+def health_check() -> dict[str, str]:
     """Return service health status."""
 
     return {
@@ -337,9 +339,9 @@ def health_check() -> Dict[str, str]:
 
 @app.get(
     "/api/v1/scenarios",
-    response_model=List[ScenarioSummary],
+    response_model=list[ScenarioSummary],
 )
-def get_scenarios() -> List[ScenarioSummary]:
+def get_scenarios() -> list[ScenarioSummary]:
     """Return configured public showcase scenarios."""
 
     return [
@@ -387,7 +389,7 @@ def run_standard_simulation(
             mode=req.mode,
         )
 
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         logger.error(
             "Simulation failure: %s",
             str(err),
@@ -406,8 +408,11 @@ def run_standard_simulation(
         ),
         parsed_params=scenario_params,
         metrics=res.metrics,
-        telemetry=res.telemetry.to_dict(
-            orient="records",
+        telemetry=cast(
+            list[dict[str, Any]],
+            res.telemetry.to_dict(
+                orient="records",
+            ),
         ),
         plot_base64=res.plot_base64,
     )
@@ -457,13 +462,16 @@ def run_llm_simulation(
             ),
             parsed_params=parsed_params,
             metrics=res.metrics,
-            telemetry=res.telemetry.to_dict(
-                orient="records",
+            telemetry=cast(
+                list[dict[str, Any]],
+                res.telemetry.to_dict(
+                    orient="records",
+                ),
             ),
             plot_base64=res.plot_base64,
         )
 
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         logger.error(
             "LLM simulation failure: %s",
             str(err),

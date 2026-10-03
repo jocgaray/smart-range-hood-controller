@@ -9,10 +9,10 @@ controller thresholds are intentionally omitted for IP protection.
 
 import argparse
 import logging
-from pathlib import Path
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 # --- DYNAMIC PROJECT ROOT RESOLUTION ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -34,6 +34,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
+logger = logging.getLogger(__name__)
+
 
 def get_git_commit() -> str:
     """Retrieve the active Git commit hash."""
@@ -46,7 +48,7 @@ def get_git_commit() -> str:
             .decode("ascii")
             .strip()
         )
-    except Exception:
+    except Exception:  # noqa: BLE001
         return "unknown"
 
 
@@ -57,7 +59,7 @@ def get_dvc_data_version(data_path: str) -> str:
             path=data_path,
             repo=str(PROJECT_ROOT),
         )
-    except Exception:
+    except Exception:  # noqa: BLE001
         return "local-untracked"
 
 
@@ -92,7 +94,7 @@ def build_and_save_features(
             get_dvc_data_version(input_path),
         )
 
-        logging.info("[1/3] Loading and normalizing timestamps...")
+        logger.info("[1/3] Loading and normalizing timestamps...")
         df = pd.read_parquet(input_path)
 
         # Robust Timestamp Resolution
@@ -128,7 +130,7 @@ def build_and_save_features(
         df = df.sort_values("timestamp").reset_index(drop=True)
         df["date_group"] = df["timestamp"].dt.date
 
-        logging.info("[2/3] Filtering label noise & preparing event targets...")
+        logger.info("[2/3] Filtering label noise & preparing event targets...")
         df = filter_short_label_noise(
             df,
             label_col="is_cooking",
@@ -140,7 +142,7 @@ def build_and_save_features(
             label_col="is_cooking",
         )
 
-        logging.info("[3/3] Engineering telemetry features...")
+        logger.info("[3/3] Engineering telemetry features...")
         df, feature_cols = engineer_features(
             df,
             group_col="date_group",
@@ -162,7 +164,7 @@ def build_and_save_features(
         mlflow.log_metric("engineered_feature_count", len(feature_cols))
         mlflow.log_metric("processing_duration_seconds", execution_duration)
 
-        logging.info(
+        logger.info(
             "Feature processing complete in %.2fs.",
             execution_duration,
         )

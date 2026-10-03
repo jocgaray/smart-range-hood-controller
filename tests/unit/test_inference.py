@@ -1,12 +1,12 @@
 # tests/unit/test_inference.py
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from src.inference import ModelInferenceEngine
-
 
 # --- 1. Initialization Tests ---
 

@@ -4,6 +4,7 @@ import sys
 import time
 import warnings
 from pathlib import Path
+from typing import Any
 
 import dvc.api
 import joblib
@@ -16,7 +17,6 @@ import pandas as pd
 from sklearn.metrics import precision_recall_curve
 from sklearn.model_selection import GroupKFold
 from tqdm import tqdm
-
 
 # ---------------------------------------------------------------------------
 # Project setup
@@ -34,6 +34,7 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 # ---------------------------------------------------------------------------
 # Reproducibility / provenance
 # ---------------------------------------------------------------------------
+
 
 def get_git_commit() -> str:
     """Return the current Git commit after checking for uncommitted changes.
@@ -74,12 +75,16 @@ def get_dvc_data_version(data_path: str) -> str:
     """Retrieve the DVC-tracked dataset reference relative to project root."""
     try:
         path_obj = Path(data_path)
-        rel_path = path_obj.relative_to(PROJECT_ROOT) if path_obj.is_absolute() else path_obj
+        rel_path = (
+            path_obj.relative_to(PROJECT_ROOT)
+            if path_obj.is_absolute()
+            else path_obj
+        )
         return dvc.api.get_url(
             path=str(rel_path),
             repo=str(PROJECT_ROOT),
         )
-    except Exception:
+    except Exception:  # noqa: BLE001
         return "local-untracked"
 
 
@@ -87,12 +92,12 @@ def get_dvc_data_version(data_path: str) -> str:
 # Model configuration
 # ---------------------------------------------------------------------------
 
-def suggest_model_params(trial: optuna.Trial) -> dict:
+
+def suggest_model_params(trial: optuna.Trial) -> dict[str, Any]:
     """Return a sanitized LightGBM search configuration.
 
     The production hyperparameter search space is intentionally not exposed.
     """
-
     return {
         "n_estimators": trial.suggest_int(
             "n_estimators",
@@ -116,11 +121,12 @@ def suggest_model_params(trial: optuna.Trial) -> dict:
 # Training
 # ---------------------------------------------------------------------------
 
+
 def train_and_optimize(
     feature_data_path: str,
     output_model_path: str,
     n_trials: int = 30,
-):
+) -> None:
     """Train and evaluate a sanitized example classification pipeline.
 
     The public implementation demonstrates:
@@ -136,7 +142,6 @@ def train_and_optimize(
     Production feature engineering, model configuration, evaluation
     methodology, and decision logic are intentionally omitted.
     """
-
     start_time = time.time()
 
     # -----------------------------------------------------------------------
@@ -149,7 +154,6 @@ def train_and_optimize(
     mlflow.lightgbm.autolog(log_models=False)
 
     with mlflow.start_run(run_name="example_optimization"):
-
         # -------------------------------------------------------------------
         # Provenance
         # -------------------------------------------------------------------
@@ -184,14 +188,10 @@ def train_and_optimize(
         ]
 
         candidate_cols = [
-            column
-            for column in df.columns
-            if column not in non_feature_cols
+            column for column in df.columns if column not in non_feature_cols
         ]
 
-        X_df = df[candidate_cols].select_dtypes(
-            include=["number", "bool"]
-        )
+        X_df = df[candidate_cols].select_dtypes(include=["number", "bool"])
 
         feature_cols = X_df.columns.tolist()
 
@@ -209,10 +209,7 @@ def train_and_optimize(
             len(X),
         )
 
-        print(
-            f"  -> Features: {X.shape[1]} | "
-            f"Samples: {len(X):,}"
-        )
+        print(f"  -> Features: {X.shape[1]} | Samples: {len(X):,}")
 
         # -------------------------------------------------------------------
         # Hyperparameter optimization
@@ -228,7 +225,6 @@ def train_and_optimize(
         )
 
         def objective(trial: optuna.Trial) -> float:
-
             trial_start = time.time()
             params = suggest_model_params(trial)
 
@@ -236,7 +232,6 @@ def train_and_optimize(
                 run_name=f"trial_{trial.number}",
                 nested=True,
             ):
-
                 mlflow.log_params(params)
 
                 # Group-aware validation is retained as an example of
@@ -244,12 +239,11 @@ def train_and_optimize(
                 # methodology is intentionally simplified.
                 cv = GroupKFold(n_splits=3)
 
-                fold_scores = []
+                fold_scores: list[float] = []
 
-                for fold, (train_idx, val_idx) in enumerate(
+                for _fold, (train_idx, val_idx) in enumerate(
                     cv.split(X, y, groups=groups)
                 ):
-
                     X_train = X[train_idx]
                     y_train = y[train_idx]
 
@@ -270,23 +264,18 @@ def train_and_optimize(
                         ],
                     )
 
-                    val_probs = model.predict_proba(X_val)[:, 1]
+                    val_probs = np.asarray(model.predict_proba(X_val))[:, 1]
 
-                    precision, recall, _ = (
-                        precision_recall_curve(
-                            y_val,
-                            val_probs,
-                        )
+                    precision, recall, _ = precision_recall_curve(
+                        y_val,
+                        val_probs,
                     )
 
                     f1_scores = (
-                        2 * precision * recall
-                        / (precision + recall + 1e-10)
+                        2 * precision * recall / (precision + recall + 1e-10)
                     )
 
-                    fold_scores.append(
-                        float(np.max(f1_scores))
-                    )
+                    fold_scores.append(float(np.max(f1_scores)))
 
                 score = float(np.mean(fold_scores))
 
@@ -326,7 +315,7 @@ def train_and_optimize(
 
         print("[3/4] Evaluating selected model configuration...")
 
-        best_params = study.best_params
+        best_params: dict[str, Any] = dict(study.best_params)
 
         best_params.update(
             {
@@ -337,10 +326,7 @@ def train_and_optimize(
         )
 
         mlflow.log_params(
-            {
-                f"selected_{key}": value
-                for key, value in best_params.items()
-            }
+            {f"selected_{key}": value for key, value in best_params.items()}
         )
 
         mlflow.log_metric(
@@ -352,14 +338,13 @@ def train_and_optimize(
         # omitted from this public implementation.
         cv = GroupKFold(n_splits=3)
 
-        scores = []
+        scores: list[float] = []
 
         for train_idx, val_idx in cv.split(
             X,
             y,
             groups=groups,
         ):
-
             model = lgb.LGBMClassifier(**best_params)
 
             model.fit(
@@ -379,23 +364,16 @@ def train_and_optimize(
                 ],
             )
 
-            val_probs = model.predict_proba(
-                X[val_idx]
-            )[:, 1]
+            val_probs = np.asarray(model.predict_proba(X[val_idx]))[:, 1]
 
             precision, recall, _ = precision_recall_curve(
                 y[val_idx],
                 val_probs,
             )
 
-            f1_scores = (
-                2 * precision * recall
-                / (precision + recall + 1e-10)
-            )
+            f1_scores = 2 * precision * recall / (precision + recall + 1e-10)
 
-            scores.append(
-                float(np.max(f1_scores))
-            )
+            scores.append(float(np.max(f1_scores)))
 
         mean_score = float(np.mean(scores))
 
@@ -456,7 +434,6 @@ def train_and_optimize(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Example ML training pipeline."
     )

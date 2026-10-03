@@ -1,11 +1,12 @@
 """
-tests/test_simulation_api.py
+tests/integration/test_simulation_api.py
 
 Integration tests verifying FastAPI orchestration (api/main.py)
 and synthetic backend engine (src/simulation_engine.py) work end-to-end.
 """
 
 from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 

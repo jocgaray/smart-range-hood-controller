@@ -1,5 +1,4 @@
-"""
-src/inference.py - Production Inference Engine for Streaming Event Detection.
+"""src/inference.py - Production Inference Engine for Streaming Event Detection.
 
 Demonstrates production-oriented model application, feature-schema alignment,
 streaming buffer normalization, and temporal post-processing.
@@ -8,8 +7,9 @@ The proprietary feature engineering, model configuration, signal-processing
 heuristics, and temporal tuning parameters are intentionally encapsulated.
 """
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any
 
 import joblib
 import numpy as np
@@ -26,17 +26,18 @@ class ModelInferenceEngine:
     def __init__(
         self,
         model_path: str = "models/event_detector.joblib",
-        postprocessor: Optional[object] = None,
-    ):
+        postprocessor: Callable[[np.ndarray, pd.Series, float], int]
+        | None = None,
+    ) -> None:
         self.model_path = Path(model_path)
 
         if not self.model_path.exists():
             raise FileNotFoundError("Model artifact not available.")
 
-        payload = joblib.load(self.model_path)
+        payload: dict[str, Any] = joblib.load(self.model_path)
 
-        self.model = payload["model"]
-        self.expected_features: List[str] = payload["feature_cols"]
+        self.model: Any = payload["model"]
+        self.expected_features: list[str] = payload["feature_cols"]
         self.optimal_threshold: float = float(
             payload.get("optimal_threshold", 0.5)
         )
@@ -49,9 +50,7 @@ class ModelInferenceEngine:
     def _ensure_timestamp_column(
         df: pd.DataFrame,
     ) -> pd.DataFrame:
-        """
-        Normalize incoming telemetry to a sorted timestamp column.
-        """
+        """Normalize incoming telemetry to a sorted timestamp column."""
         df_clean = df.copy()
 
         if "timestamp" not in df_clean.columns and isinstance(
@@ -76,8 +75,7 @@ class ModelInferenceEngine:
             ]
 
             found_col = [
-                col for col in possible_time_cols
-                if col in df_clean.columns
+                col for col in possible_time_cols if col in df_clean.columns
             ]
 
             if found_col:
@@ -90,22 +88,15 @@ class ModelInferenceEngine:
                     "DataFrame must contain a valid timestamp column."
                 )
 
-        df_clean["timestamp"] = pd.to_datetime(
-            df_clean["timestamp"]
-        )
+        df_clean["timestamp"] = pd.to_datetime(df_clean["timestamp"])
 
-        return (
-            df_clean
-            .sort_values("timestamp")
-            .reset_index(drop=True)
-        )
+        return df_clean.sort_values("timestamp").reset_index(drop=True)
 
     def _align_features(
         self,
         df_engineered: pd.DataFrame,
     ) -> pd.DataFrame:
-        """
-        Align engineered features with the model's expected schema.
+        """Align engineered features with the model's expected schema.
 
         The feature definitions themselves remain encapsulated.
         """
@@ -114,9 +105,7 @@ class ModelInferenceEngine:
             fill_value=np.nan,
         )
 
-        float_cols = X.select_dtypes(
-            include=["float64"]
-        ).columns
+        float_cols = X.select_dtypes(include=["float64"]).columns
 
         if len(float_cols) > 0:
             X[float_cols] = X[float_cols].astype("float32")
@@ -128,8 +117,7 @@ class ModelInferenceEngine:
         probabilities: np.ndarray,
         timestamps: pd.Series,
     ) -> int:
-        """
-        Apply temporal post-processing to model predictions.
+        """Apply temporal post-processing to model predictions.
 
         The production filtering and signal-based gating logic is
         intentionally omitted from the public implementation.
@@ -143,18 +131,15 @@ class ModelInferenceEngine:
                 )
             )
 
-        return int(
-            probabilities[-1] >= self.optimal_threshold
-        )
+        return int(probabilities[-1] >= self.optimal_threshold)
 
     def predict_stream_window(
         self,
         buffer_df: pd.DataFrame,
-        threshold: Optional[float] = None,
+        threshold: float | None = None,
         min_buffer_rows: int = 5,
-    ) -> Dict[str, Union[int, float, str]]:
-        """
-        Execute model inference over a streaming temporal buffer.
+    ) -> dict[str, int | float | str]:
+        """Execute model inference over a streaming temporal buffer.
 
         The public implementation demonstrates the inference contract;
         proprietary feature engineering and temporal filtering remain
@@ -167,7 +152,7 @@ class ModelInferenceEngine:
 
         if len(df_clean) < min_buffer_rows:
             raise ValueError(
-                f"Insufficient temporal context: "
+                "Insufficient temporal context: "
                 f"at least {min_buffer_rows} rows are required."
             )
 
@@ -185,7 +170,7 @@ class ModelInferenceEngine:
         X = self._align_features(df_engineered)
 
         # Model probability inference.
-        probabilities = self.model.predict_proba(X)[:, 1]
+        probabilities: np.ndarray = self.model.predict_proba(X)[:, 1]
         probabilities = np.nan_to_num(
             probabilities,
             nan=0.0,
@@ -204,9 +189,7 @@ class ModelInferenceEngine:
         )
 
         return {
-            "timestamp": str(
-                df_clean["timestamp"].iloc[-1]
-            ),
+            "timestamp": str(df_clean["timestamp"].iloc[-1]),
             "event_prediction": prediction,
             "event_probability": latest_probability,
             "threshold_used": float(threshold),

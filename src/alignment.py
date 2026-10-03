@@ -11,7 +11,7 @@ def _infer_activity_end_time(
 
     The implementation is intentionally omitted from this public example.
     """
-    ...
+    return start_time
 
 
 def align_annotations_with_sensors(
@@ -59,4 +59,3 @@ def align_annotations_with_sensors(
             df.loc[mask, "household_activity"] = label
 
     return df
-

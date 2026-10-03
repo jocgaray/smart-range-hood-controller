@@ -4,7 +4,6 @@ Selected function signatures and docstrings from the production smart hood contr
 Implementation details are intentionally omitted for IP protection.
 """
 
-from typing import Any
 import pandas as pd
 
 

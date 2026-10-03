@@ -1,6 +1,7 @@
 # tests/conftest.py
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
 import pytest
 
 from src.inference import ModelInferenceEngine

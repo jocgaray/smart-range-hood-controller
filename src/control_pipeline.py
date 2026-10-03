@@ -19,8 +19,7 @@ heuristics, and controller tuning are intentionally encapsulated.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 # =====================================================================
 # 1. PIPELINE CONFIGURATION
@@ -35,7 +34,7 @@ class PipelineConfig:
     externally rather than hardcoded into the orchestration layer.
     """
 
-    field_map: Dict[str, str] = field(
+    field_map: dict[str, str] = field(
         default_factory=lambda: {
             "pm25": "pm25_raw",
             "co2": "co2_raw",
@@ -89,7 +88,7 @@ class PhysicalStateEstimate:
     velocity: float
     acceleration: float
     is_rising: bool
-    state_metadata: Dict[str, float] = field(
+    state_metadata: dict[str, float] = field(
         default_factory=dict
     )
 
@@ -101,7 +100,7 @@ class ControlCommand:
     target_level: str
     control_mode: str
     is_system_active: bool
-    timers: Dict[str, float] = field(
+    timers: dict[str, float] = field(
         default_factory=dict
     )
 
@@ -120,14 +119,14 @@ class EventClassifier:
 
     def __init__(
         self,
-        model_path: Optional[str] = None,
+        model_path: str | None = None,
     ):
         self._model_path = model_path
 
     def predict(
         self,
         telemetry: TelemetryPayload,
-        history: List[TelemetryPayload],
+        history: list[TelemetryPayload],
     ) -> MLInferenceOutput:
         """
         Predict event probability from the current telemetry
@@ -161,7 +160,7 @@ class PhysicalStateEstimator:
     ):
         self.config = config
 
-        self._previous_metric: Optional[float] = None
+        self._previous_metric: float | None = None
         self._velocity: float = 0.0
         self._acceleration: float = 0.0
 
@@ -212,7 +211,7 @@ class ClosedLoopController:
         self.current_level = "OFF"
         self.is_system_active = False
 
-        self.timers: Dict[str, float] = {
+        self.timers: dict[str, float] = {
             "clearance": 0.0,
             "hold": 0.0,
             "cooldown": 0.0,
@@ -262,7 +261,7 @@ class ControlPipelineOrchestrator:
 
     def __init__(
         self,
-        config: Optional[PipelineConfig] = None,
+        config: PipelineConfig | None = None,
     ):
         self.config = config or PipelineConfig()
 
@@ -274,15 +273,15 @@ class ControlPipelineOrchestrator:
             self.config
         )
 
-        self.history_buffer: List[
+        self.history_buffer: list[
             TelemetryPayload
         ] = []
 
     def process_telemetry_frame(
         self,
-        raw_telemetry: Dict[str, Any],
+        raw_telemetry: dict[str, Any],
         dt: float = 1.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute one complete ML → estimation → control cycle.
         """
