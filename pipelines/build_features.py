@@ -131,13 +131,13 @@ def build_and_save_features(
         logger.info("[2/3] Filtering label noise & preparing event targets...")
         df = filter_short_label_noise(
             df,
-            label_col="is_cooking",
+            label_col="target",
         )
 
         df = create_event_target(
             df,
             sensor_config=get_public_sensor_configuration(),
-            label_col="is_cooking",
+            label_col="target",
         )
 
         logger.info("[3/3] Engineering telemetry features...")

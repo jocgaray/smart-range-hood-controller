@@ -2,23 +2,73 @@ schema: '2.0'
 stages:
   build_features:
     cmd: python pipelines/build_features.py --input 
-      data/sample/telemetry_sample.parquet --output 
-      data/features_prepared.parquet
+      data/aligned_telemetry.parquet --output data/features_prepared.parquet
     deps:
+    - path: data/aligned_telemetry.parquet
+      hash: md5
+      md5: f1fc3582ff8f8f79dab1d763a96cf587
+      size: 11030
+    - path: pipelines/build_features.py
+      hash: md5
+      md5: 3f7aebb899f675210ec9cf183f684853
+      size: 5365
+    - path: src/feature_helpers.py
+      hash: md5
+      md5: dd7cfc1171a73174163b6275764fd805
+      size: 2076
+    - path: src/features.py
+      hash: md5
+      md5: 57b4fa9c0c66e1cddbbe459f31d37934
+      size: 4817
+    outs:
+    - path: data/features_prepared.parquet
+      hash: md5
+      md5: a5d0f67aa00369f42bde5e9ba7fad63f
+      size: 80341
+  preprocess_align:
+    cmd: python pipelines/preprocess_align.py --sensors 
+      data/sample/telemetry_sample.parquet --annotations 
+      data/sample/annotations_sample.csv --output data/aligned_telemetry.parquet
+    deps:
+    - path: data/sample/annotations_sample.csv
+      hash: md5
+      md5: 05a290f4e1232aa20cc5232b30ca2003
+      size: 165
     - path: data/sample/telemetry_sample.parquet
       hash: md5
       md5: 0d23f6aedc2376cfd2a1b0b52d037425
       size: 10170
-    - path: pipelines/build_features.py
+    - path: pipelines/preprocess_align.py
       hash: md5
-      md5: 17ed2921a2fe0c25a3a3478e304e4f60
-      size: 5336
-    - path: src/features.py
+      md5: ce9788c0a22a3e11ea5336cd74e89fb9
+      size: 3283
+    - path: src/alignment.py
       hash: md5
-      md5: 3210440f7ae0756b2df323787c3aefc6
-      size: 4680
+      md5: 7a409e303566b33cff0a7055208a50ed
+      size: 1792
+    - path: src/preprocessing.py
+      hash: md5
+      md5: e70f643e0ab697f8536d6977eb7b6865
+      size: 3074
     outs:
+    - path: data/aligned_telemetry.parquet
+      hash: md5
+      md5: f1fc3582ff8f8f79dab1d763a96cf587
+      size: 11030
+  train_optuna:
+    cmd: python pipelines/train_optuna.py --data data/features_prepared.parquet 
+      --output models/event_detector.joblib --trials 30
+    deps:
     - path: data/features_prepared.parquet
       hash: md5
-      md5: c6d84d9fef51a2a35c1a1c29749813d5
-      size: 79168
+      md5: a5d0f67aa00369f42bde5e9ba7fad63f
+      size: 80341
+    - path: pipelines/train_optuna.py
+      hash: md5
+      md5: 6409788f4ffbbd07cd624c60384e7a66
+      size: 28701
+    outs:
+    - path: models/event_detector.joblib
+      hash: md5
+      md5: 5269a58599056aa434aab40ca456589d
+      size: 8246

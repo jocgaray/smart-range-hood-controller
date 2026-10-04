@@ -1,10 +1,22 @@
 stages:
-  build_features:
-    cmd: python pipelines/build_features.py --input data/sample/telemetry_sample.parquet --output data/features_prepared.parquet
+  preprocess_align:
+    cmd: python pipelines/preprocess_align.py --sensors data/sample/telemetry_sample.parquet --annotations data/sample/annotations_sample.csv --output data/aligned_telemetry.parquet
     deps:
       - data/sample/telemetry_sample.parquet
+      - data/sample/annotations_sample.csv
+      - pipelines/preprocess_align.py
+      - src/alignment.py
+      - src/preprocessing.py
+    outs:
+      - data/aligned_telemetry.parquet
+
+  build_features:
+    cmd: python pipelines/build_features.py --input data/aligned_telemetry.parquet --output data/features_prepared.parquet
+    deps:
+      - data/aligned_telemetry.parquet
       - pipelines/build_features.py
       - src/features.py
+      - src/feature_helpers.py
     outs:
       - data/features_prepared.parquet
 
@@ -15,3 +27,22 @@ stages:
       - pipelines/train_optuna.py
     outs:
       - models/event_detector.joblib
+
+
+# stages:
+#   build_features:
+#     cmd: python pipelines/build_features.py --input data/sample/telemetry_sample.parquet --output data/features_prepared.parquet
+#     deps:
+#       - data/sample/telemetry_sample.parquet
+#       - pipelines/build_features.py
+#       - src/features.py
+#     outs:
+#       - data/features_prepared.parquet
+
+#   train_optuna:
+#     cmd: python pipelines/train_optuna.py --data data/features_prepared.parquet --output models/event_detector.joblib --trials 30
+#     deps:
+#       - data/features_prepared.parquet
+#       - pipelines/train_optuna.py
+#     outs:
+#       - models/event_detector.joblib

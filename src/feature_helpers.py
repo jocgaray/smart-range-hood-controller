@@ -9,7 +9,7 @@ import pandas as pd
 
 def filter_short_label_noise(
     df: pd.DataFrame,
-    label_col: str = "is_cooking",
+    label_col: str = "target",
     min_duration_steps: int = 3,
 ) -> pd.DataFrame:
     """Filter out transient signal spikes (debouncing) on ground-truth target labels.
@@ -36,7 +36,7 @@ def filter_short_label_noise(
 def create_event_target(
     df: pd.DataFrame,
     sensor_config: dict[str, float] | None = None,
-    label_col: str = "is_cooking",
+    label_col: str = "target",
 ) -> pd.DataFrame:
     """Derive event activation targets from multi-sensor threshold triggers.
 
