@@ -1,7 +1,7 @@
 # Smart Range Hood Controller: ML Onset Detection & Physics-Based MPC Optimization
 
 > **Project Scope & Intellectual Property Notice**
-> This repository contains selected, IP-safe excerpts from a production-oriented project. Proprietary physics models, controller tuning, feature engineering, trained artifacts, raw telemetry, and detailed LLM prompts have been omitted or stubbed. The public showcase demonstrates the **system architecture, interfaces, and software engineering practices.**
+> This repository contains selected, IP-safe excerpts from the private, production-oriented project. Proprietary physics models, controller tuning, feature engineering, trained artifacts, raw telemetry, and detailed LLM prompts have been omitted or stubbed. The public showcase demonstrates the **system architecture, interfaces, and software engineering practices.**
 
 ---
 
@@ -20,33 +20,41 @@ This repository serves as a showcase for production-ready MLOps practices, clean
 ## System Overview
 
 ```text
-                        +-------------------------+
-                        |  Telemetry Sensor Data  |
-                        +------------+------------+
-                                        |
-                                        v
-            +-------------------------------------------------------+
-            |                    DVC Pipeline                       |
-            |  [build_features] ---> [train_optuna] ---> MLflow     |
-            +---------------------------+---------------------------+
-                                        |
-                                        v
-                            +-------------------+
-                            | Trained Artifacts |
-                            +---------+---------+
-                                      |
-                                      v
-            +-------------------+           +-----------------------+
-            |    FastAPI App    | <-------> |   Simulation Engine   |
-            | (REST API Router) |           |  (Physics MPC & IAQ)  |
-            +---------+---------+           +-----------------------+
-                        ^
-                        |  (REST / HTTP)
-                        v
-            +-------------------+
-            |   Streamlit App   |
-            |  (Web Dashboard)  |
-            +-------------------+
+                                +-------------------------+
+                                |  Telemetry Sensor Data  |
+                                +------------+------------+
+                                            |
+                                            v
+    +---------------------------------------------------------------------------------+
+    |                                  DVC Pipeline                                   |
+    |    [preprocess_align] ---> [build_features] ---> [train_optuna] ---> MLflow     |
+    +---------------------------+-----------------------------------------------------+
+                                            |
+                                            v
+                                   +---------------------+
+                                   |  Trained Artifacts  |
+                                   +---------+-----------+
+                                            |
+                                            v
+                                +----------------------------+
+                                |    Simulation Engine       |
+                                | (Physics MPC, ML detector, | 
+                                |  & simulation environment) |
+                                +-----------+----------------+
+                                            ^
+                                            |
+                                            v
+                                  +-----------------------+
+                                  |      FastAPI App      |
+                                  |   (REST API Router)   |
+                                  +-----------+-----------+
+                                            ^
+                                            |  (REST / HTTP)
+                                            v
+                                  +-----------------------+
+                                  |     Streamlit App     |
+                                  |    (Web Dashboard)    |
+                                  +-----------------------+
 
 ```
 ---
@@ -87,9 +95,18 @@ cp .env.example .env
 Since raw telemetry datasets are excluded via `.gitignore`, generate a synthetic sample dataset to test the pipeline locally:
 
 ```bash
-# Generate sample telemetry parquet file
+# Create directory for sample data
 mkdir -p data/sample
 
+# Generate sample event annotations CSV
+cat << 'EOF' > data/sample/annotations_sample.csv
+ts,Label,end_ts
+2026-10-04 18:05:00,Cooking_Searing,2026-10-04 18:20:00
+2026-10-04 18:30:00,Cooking_Simmering,2026-10-04 18:55:00
+2026-10-04 19:10:00,Cleaning_Steam,
+EOF
+
+# Generate sample telemetry parquet file aligned with the annotations timeframe
 uv run python -c "
 import pandas as pd
 import numpy as np
@@ -106,7 +123,7 @@ df.to_parquet('data/sample/telemetry_sample.parquet')
 print('Sample telemetry dataset created successfully with PM2.5, CO2, and VOC.')
 "
 
-# Reproduce the ML pipeline end-to-end
+# Reproduce the ML pipeline end-to-end via DVC
 uv run dvc repro
 
 ```
@@ -154,7 +171,7 @@ uv run streamlit run frontend/app.py
 │   └── workflows/          # GitHub Actions (CI lint/test & CD image publishing)
 ├── api/                    # FastAPI backend code and endpoints
 ├── frontend/               # Streamlit application scripts and dashboard
-├── pipelines/              # DVC ML pipeline stages (feature extraction, Optuna)
+├── pipelines/              # DVC ML pipeline stages (preprocessing & alignment, feature extraction, training + Optuna)
 ├── simulation/             # Physics-based MPC & telemetry scenario simulation
 ├── src/                    # Core domain logic, models, and shared utilities
 ├── tests/                  # Unit and integration test suite
@@ -206,7 +223,7 @@ uv run ruff format --check .
 
 The plots illustrate a performance comparison between proactive and reactive controllers, along with the predicted ML cooking onset probabilities.
 
-**Overlapping Compound Cooking: Boiling and Heaving Frying**:  The simulation was generated using the preset scenario selector in the user interface. The superior performance of the proactive controller is clearly demonstrated, reducing peak pollutant exposure while simultaneously lowering energy usage.
+**Overlapping Compound Cooking: Boiling and Heavy Frying**:  The simulation was generated using the preset scenario selector in the user interface. The superior performance of the proactive controller is clearly demonstrated, reducing peak pollutant exposure while simultaneously lowering energy usage.
 
 ![Dashboard UI 2](docs/images/preset_scenario_result.png)
 
