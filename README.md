@@ -223,7 +223,7 @@ uv run ruff format --check .
 
 The plots illustrate a performance comparison between proactive and reactive controllers, along with the predicted ML cooking onset probabilities.
 
-**Overlapping Compound Cooking: Boiling and Heavy Frying**:  The simulation was generated using the preset scenario selector in the user interface. The superior performance of the proactive controller is clearly demonstrated, reducing peak pollutant exposure while simultaneously lowering energy usage.
+**Overlapping Compound Cooking—Boiling and Heavy Frying**:  The simulation was generated using the preset scenario selector in the user interface. The superior performance of the proactive controller is clearly demonstrated, reducing peak pollutant exposure while simultaneously lowering energy usage.
 
 ![Dashboard UI 2](docs/images/preset_scenario_result.png)
 
