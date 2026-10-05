@@ -19,7 +19,8 @@ This repository serves as a showcase for production-ready MLOps practices, clean
 
 ## System Overview
 
-![System Overview](docs/images/system_overview.png)
+<img src="docs/images/system_overview.svg" alt="System Overview" width="660"> 
+
 
 ---
 
