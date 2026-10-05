@@ -19,44 +19,8 @@ This repository serves as a showcase for production-ready MLOps practices, clean
 
 ## System Overview
 
-```text
-                                +-------------------------+
-                                |  Telemetry Sensor Data  |
-                                +------------+------------+
-                                            |
-                                            v
-    +---------------------------------------------------------------------------------+
-    |                                  DVC Pipeline                                   |
-    |    [preprocess_align] ---> [build_features] ---> [train_optuna] ---> MLflow     |
-    +---------------------------+-----------------------------------------------------+
-                                            |
-                                            v
-                                   +---------------------+
-                                   |  Trained Artifacts  |
-                                   +---------+-----------+
-                                            |
-                                            v
-                                +----------------------------+
-                                |    Simulation Engine       |
-                                | (Physics MPC, ML detector, | 
-                                |  & simulation environment) |
-                                +-----------+----------------+
-                                            ^
-                                            |
-                                            v
-                                  +-----------------------+
-                                  |      FastAPI App      |
-                                  |   (REST API Router)   |
-                                  +-----------+-----------+
-                                            ^
-                                            |  (REST / HTTP)
-                                            v
-                                  +-----------------------+
-                                  |     Streamlit App     |
-                                  |    (Web Dashboard)    |
-                                  +-----------------------+
+![System Overview](docs/images/system_overview.png)
 
-```
 ---
 
 
