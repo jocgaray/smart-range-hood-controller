@@ -11,11 +11,17 @@ This repository serves as a showcase for production-ready MLOps practices, clean
 
 ## System Architecture & Engineering Highlights
 
-* **Structured LLM Orchestration & Deterministic Safety:** Integrates LangChain with Pydantic v2 schemas (`ParsedScenarioParams`) to enforce strict output typing from natural-language prompts. Raw GenAI outputs undergo deterministic parameter reconciliation before reaching downstream engines to guarantee runtime consistency.
-* **Modular Clean Architecture:** Strict separation of concerns between presentation (`frontend/`), REST API orchestration (`api/`), execution engines (`src/`), simulation modules and diagnostic evaluation scripts (`simulations/`, `src/simulation_engine.py`), and training/data pipelines (`pipelines/`). Logic is decoupled via interfaces and dependency inversion.
-* **Production MLOps Pipeline & Tracking:** Utilizes Data Version Control (DVC) for reproducible data lineage and pipeline execution (`dvc.yaml`), paired with Optuna for structured hyperparameter optimization (`pipelines/train_optuna.py`) and MLflow for comprehensive experiment tracking (logging hierarchical trials, parameters, metrics, and model artifacts).
-* **Containerization & Multi-Environment Setup:** Targeted, lightweight Dockerfiles (`Dockerfile.api`, `Dockerfile.frontend`) and tiered Docker Compose configurations (`docker-compose.yml` vs. `docker-compose.prod.yml`) ensure consistent execution across local development and production environments.
-* **Defensive Engineering & Layered QA:** Automated CI/CD GitHub Actions workflows covering linting (`Ruff`), type safety (`mypy`), code formatting, and multi-tier Pytest coverage (`tests/unit/` for isolated domain logic and `tests/integration/` for end-to-end API validation).
+## System Architecture & Engineering Highlights
+
+* **Structured LLM Orchestration & Deterministic Validation:** Integrates LangChain with Pydantic v2 (`ParsedScenarioParams`) to extract and validate structured parameters from natural-language prompts. Model-generated values undergo deterministic validation and reconciliation before reaching downstream simulation and control components.
+
+* **Modular Architecture & Separation of Concerns:** Separates presentation (`frontend/`), API orchestration (`api/`), execution and simulation engines (`src/`, `simulations/`), and ML training pipelines (`pipelines/`). Clear component boundaries and interfaces reduce coupling and support independent testing and maintenance.
+
+* **Reproducible MLOps & Experiment Tracking:** Uses DVC to version data and orchestrate a training pipeline covering alignment, feature engineering, and Optuna-based hyperparameter optimization. Pipeline dependencies and outputs are defined in `dvc.yaml` and `dvc.lock`, enabling reproducible execution with `uv run dvc repro`. MLflow tracks Optuna trials through nested runs, recording parameters and metrics, and logs model artifacts.
+
+* **Containerization & Environment Management:** Uses dedicated Dockerfiles (`Dockerfile.api`, `Dockerfile.frontend`) and separate development and production Docker Compose configurations to standardize service setup across environments. Container images are built and published to GitHub Container Registry (GHCR) with commit-SHA tags.
+
+* **Automated Quality Assurance & CI/CD:** GitHub Actions automates linting (Ruff), type checking (mypy), formatting, and Pytest execution. Unit tests (`tests/unit/`) verify individual components, while integration tests (`tests/integration/`) validate cross-component interactions and API behavior. A separate workflow builds and publishes API and frontend images to GHCR on pushes to `main`.
 
 ---
 
@@ -73,24 +79,27 @@ ts,Label,end_ts
 2026-10-04 19:10:00,Cleaning_Steam,
 EOF
 
-# Generate sample telemetry parquet file aligned with the annotations timeframe
+# Generate synthetic telemetry covering the annotated timeframe (2 hours at 1 s)
 uv run python -c "
-import pandas as pd
 import numpy as np
+import pandas as pd
 
+rng = np.random.default_rng(42)
+n = 7200
 df = pd.DataFrame({
-    'timestamp': pd.date_range(start='2026-01-01', periods=100, freq='1s'),
-    'pm2_5': np.random.uniform(5.0, 150.0, 100),
-    'co2': np.random.uniform(400.0, 1800.0, 100),
-    'voc': np.random.uniform(0.1, 5.0, 100),
-    'temperature': np.random.uniform(20.0, 28.0, 100),
-    'humidity': np.random.uniform(35.0, 65.0, 100)
+    'timestamp': pd.date_range(start='2026-10-04 18:00:00', periods=n, freq='1s'),
+    'pm2_5': rng.uniform(5.0, 150.0, n),
+    'co2': rng.uniform(400.0, 1800.0, n),
+    'voc': rng.uniform(0.1, 5.0, n),
+    'temperature': rng.uniform(20.0, 28.0, n),
+    'humidity': rng.uniform(35.0, 65.0, n),
 })
 df.to_parquet('data/sample/telemetry_sample.parquet')
-print('Sample telemetry dataset created successfully with PM2.5, CO2, and VOC.')
+print('Synthetic telemetry created (random values: for smoke-testing only).')
 "
 
-# Reproduce the ML pipeline end-to-end via DVC
+# Run the pipeline end-to-end via DVC
+#(verifies the stages execute; metrics on random data are not meaningful)
 uv run dvc repro
 
 ```
