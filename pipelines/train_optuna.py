@@ -46,9 +46,9 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
 def get_git_commit() -> str:
-    """Return the current Git commit after checking for uncommitted changes."""
+    """Return the current Git commit, ignoring expected local changes like data/sample and dvc.lock."""
     try:
-        status = (
+        status_output = (
             subprocess.check_output(
                 ["git", "status", "--porcelain"],
                 cwd=PROJECT_ROOT,
@@ -57,10 +57,21 @@ def get_git_commit() -> str:
             .strip()
         )
 
-        if status and os.getenv("SKIP_GIT_CHECK") != "1":
-            raise RuntimeError(
-                "Uncommitted changes detected. Commit or stash changes before training."
-            )
+        if status_output and os.getenv("SKIP_GIT_CHECK") != "1":
+            lines = status_output.splitlines()
+            
+            # Filter out expected local generated files/locks
+            real_changes = [
+                line for line in lines 
+                if not line.endswith("dvc.lock") 
+                and not line.startswith("?? data/sample/")
+            ]
+
+            if real_changes:
+                raise RuntimeError(
+                    "Uncommitted changes detected in core source code. "
+                    "Commit or stash changes before training."
+                )
 
         return (
             subprocess.check_output(
