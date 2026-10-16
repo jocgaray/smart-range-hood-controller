@@ -9,9 +9,11 @@
 
 This repository serves as a showcase for production-ready MLOps practices, clean system boundaries, and robust API/frontend orchestration.
 
+## System Architecture & Engineering Highlights
+
 * **Structured LLM Orchestration & Deterministic Safety:** Integrates LangChain with Pydantic v2 schemas (`ParsedScenarioParams`) to enforce strict output typing from natural-language prompts. Raw GenAI outputs undergo deterministic parameter reconciliation before reaching downstream engines to guarantee runtime consistency.
-* **Modular Clean Architecture:** Strict separation of concerns between presentation (`frontend/`), REST API orchestration (`api/`), execution engines (`src/`), simulation modules (`simulation/`), and training/data pipelines (`pipelines/`). Logic is decoupled via interfaces and dependency inversion.
-* **Production MLOps Pipeline:** Utilizes Data Version Control (DVC) for reproducible data lineage and pipeline execution (`dvc.yaml`), paired with Optuna for structured hyperparameter optimization (`pipelines/train_optuna.py`).
+* **Modular Clean Architecture:** Strict separation of concerns between presentation (`frontend/`), REST API orchestration (`api/`), execution engines (`src/`), simulation modules and diagnostic evaluation scripts (`simulations/`, `src/simulation_engine.py`), and training/data pipelines (`pipelines/`). Logic is decoupled via interfaces and dependency inversion.
+* **Production MLOps Pipeline & Tracking:** Utilizes Data Version Control (DVC) for reproducible data lineage and pipeline execution (`dvc.yaml`), paired with Optuna for structured hyperparameter optimization (`pipelines/train_optuna.py`) and MLflow for comprehensive experiment tracking (logging hierarchical trials, parameters, metrics, and model artifacts).
 * **Containerization & Multi-Environment Setup:** Targeted, lightweight Dockerfiles (`Dockerfile.api`, `Dockerfile.frontend`) and tiered Docker Compose configurations (`docker-compose.yml` vs. `docker-compose.prod.yml`) ensure consistent execution across local development and production environments.
 * **Defensive Engineering & Layered QA:** Automated CI/CD GitHub Actions workflows covering linting (`Ruff`), type safety (`mypy`), code formatting, and multi-tier Pytest coverage (`tests/unit/` for isolated domain logic and `tests/integration/` for end-to-end API validation).
 
