@@ -59,11 +59,12 @@ def get_git_commit() -> str:
 
         if status_output and os.getenv("SKIP_GIT_CHECK") != "1":
             lines = status_output.splitlines()
-            
+
             # Filter out expected local generated files/locks
             real_changes = [
-                line for line in lines 
-                if not line.endswith("dvc.lock") 
+                line
+                for line in lines
+                if not line.endswith("dvc.lock")
                 and not line.startswith("?? data/sample/")
             ]
 
