@@ -52,7 +52,11 @@ def clean_and_regularize_telemetry(
     regularized = data.reindex(full_grid, method="nearest", limit=max_fill_samples)
 
     # 5. Outlier Suppression (Static Electricity Spikes)
-    co2_col = "co2" if "co2" in regularized.columns else ("CO2" if "CO2" in regularized.columns else None)
+    co2_col = (
+        "co2"
+        if "co2" in regularized.columns
+        else ("CO2" if "CO2" in regularized.columns else None)
+    )
     if co2_col:
         regularized[co2_col] = regularized[co2_col].apply(
             lambda val: np.nan if val > co2_outlier_threshold else val
@@ -63,9 +67,24 @@ def clean_and_regularize_telemetry(
         )
 
     # 6. Quality & Validity Indicators
-    sensor_cols = [c for c in ["temperature", "co2", "CO2", "voc", "VOC", "pm2_5", "PM2_5", "humidity"] if c in regularized.columns]
+    sensor_cols = [
+        c
+        for c in [
+            "temperature",
+            "co2",
+            "CO2",
+            "voc",
+            "VOC",
+            "pm2_5",
+            "PM2_5",
+            "humidity",
+        ]
+        if c in regularized.columns
+    ]
     if sensor_cols:
-        regularized["is_valid_telemetry"] = regularized[sensor_cols].notna().all(axis=1).astype(int)
+        regularized["is_valid_telemetry"] = (
+            regularized[sensor_cols].notna().all(axis=1).astype(int)
+        )
 
     # 7. Rolling Noise Reduction
     for col in sensor_cols:

@@ -26,7 +26,7 @@ def _extract_rate_of_change(
     feature_cols = []
     for col in sensor_cols:
         feature_name = f"{col}_diff_1m"
-        # At 1Hz, looking 60 rows back represents a 60-second span. 
+        # At 1Hz, looking 60 rows back represents a 60-second span.
         # Dividing by 60.0 scales the total difference into a per-second rate.
         df[feature_name] = df[col].diff(periods=60).fillna(0.0) / 60.0
         feature_cols.append(feature_name)
