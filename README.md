@@ -9,10 +9,6 @@
 
 This repository serves as a showcase for production-ready MLOps practices, clean system boundaries, and robust API/frontend orchestration.
 
-## System Architecture & Engineering Highlights
-
-## System Architecture & Engineering Highlights
-
 * **Structured LLM Orchestration & Deterministic Validation:** Integrates LangChain with Pydantic v2 (`ParsedScenarioParams`) to extract and validate structured parameters from natural-language prompts. Model-generated values undergo deterministic validation and reconciliation before reaching downstream simulation and control components.
 
 * **Modular Architecture & Separation of Concerns:** Separates presentation (`frontend/`), API orchestration (`api/`), execution and simulation engines (`src/`, `simulations/`), and ML training pipelines (`pipelines/`). Clear component boundaries and interfaces reduce coupling and support independent testing and maintenance.
