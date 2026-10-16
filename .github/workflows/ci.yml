@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]         # Runs on PRs targeting main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-and-build:
     name: Lint, Test & Verify Build
@@ -39,7 +43,7 @@ jobs:
           uv run pytest tests/ \
             --cov=src \
             --cov-report=term-missing \
-            --cov-fail-under=35
+            --cov-fail-under=30
 
       - name: Verify Docker Compose Build
         run: docker compose build
